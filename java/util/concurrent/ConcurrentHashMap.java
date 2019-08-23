@@ -774,6 +774,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
 
     /**
      * The next table to use; non-null only while resizing.
+     * transient修饰的变量，序列化的时候不会随类一起序列化到本地，为安全性考量
      */
     private transient volatile Node<K,V>[] nextTable;
 
@@ -933,7 +934,9 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      */
     public V get(Object key) {
         Node<K,V>[] tab; Node<K,V> e, p; int n, eh; K ek;
+        //计算key的哈希值
         int h = spread(key.hashCode());
+        //table定义为了volatile类型的变量
         if ((tab = table) != null && (n = tab.length) > 0 &&
             (e = tabAt(tab, (n - 1) & h)) != null) {
             if ((eh = e.hash) == h) {
