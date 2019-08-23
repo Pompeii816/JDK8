@@ -957,6 +957,9 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         //计算key的哈希值
         int h = spread(key.hashCode());
         //table定义为了volatile类型的变量
+        //通过tabAt()方法，找出tab所在的segment，
+        // 这里用到了两次Hash，一次是计算Key的Hash，另一次是tabAt()函数中使用了一次Hash；
+        // 两次Hash的作用是尽可能使元素分布均匀，不使某个segment负载过重导致性能下降；
         if ((tab = table) != null && (n = tab.length) > 0 &&
             (e = tabAt(tab, (n - 1) & h)) != null) {
             if ((eh = e.hash) == h) {
