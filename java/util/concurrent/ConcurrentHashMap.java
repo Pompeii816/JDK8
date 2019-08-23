@@ -507,24 +507,28 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * bounds for power of two table sizes, and is further required
      * because the top two bits of 32bit hash fields are used for
      * control purposes.
+     * ConcurrentHashMap最大容量
      */
     private static final int MAXIMUM_CAPACITY = 1 << 30;
 
     /**
      * The default initial table capacity.  Must be a power of 2
      * (i.e., at least 1) and at most MAXIMUM_CAPACITY.
+     * 初始化容量
      */
     private static final int DEFAULT_CAPACITY = 16;
 
     /**
      * The largest possible (non-power of two) array size.
      * Needed by toArray and related methods.
+     * 数组最大的长度
      */
     static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
     /**
      * The default concurrency level for this table. Unused but
      * defined for compatibility with previous versions of this class.
+     * 初始化并发级别，即segment的长度
      */
     private static final int DEFAULT_CONCURRENCY_LEVEL = 16;
 
@@ -534,6 +538,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * actual floating point value isn't normally used -- it is
      * simpler to use expressions such as {@code n - (n >>> 2)} for
      * the associated resizing threshold.
+     * segment的负载率，超过这个量，即开始扩容
      */
     private static final float LOAD_FACTOR = 0.75f;
 
@@ -544,6 +549,8 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * than 2, and should be at least 8 to mesh with assumptions in
      * tree removal about conversion back to plain bins upon
      * shrinkage.
+     * segment中list转化为红黑树的阈值，
+     * 一个segment中的元素数量超过这个阈值，就转化为红黑树
      */
     static final int TREEIFY_THRESHOLD = 8;
 
@@ -551,6 +558,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * The bin count threshold for untreeifying a (split) bin during a
      * resize operation. Should be less than TREEIFY_THRESHOLD, and at
      * most 6 to mesh with shrinkage detection under removal.
+     * 对segment进行transfer的过程中，分成的两部分是否需要红黑树化的阈值
      */
     static final int UNTREEIFY_THRESHOLD = 6;
 
@@ -559,6 +567,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * (Otherwise the table is resized if too many nodes in a bin.)
      * The value should be at least 4 * TREEIFY_THRESHOLD to avoid
      * conflicts between resizing and treeification thresholds.
+     * 红黑树化后，树的初始化容量，即最小容量
      */
     static final int MIN_TREEIFY_CAPACITY = 64;
 
@@ -615,6 +624,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * in bulk tasks.  Subclasses of Node with a negative hash field
      * are special, and contain null keys and values (but are never
      * exported).  Otherwise, keys and vals are never null.
+     * 节点类
      */
     static class Node<K,V> implements Map.Entry<K,V> {
         final int hash;
@@ -648,6 +658,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
 
         /**
          * Virtualized support for map.get(); overridden in subclasses.
+         * 不止对比传入的一个对象，会沿着这个对象的后继对象继续找
          */
         Node<K,V> find(int h, Object k) {
             Node<K,V> e = this;
@@ -702,6 +713,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     /**
      * Returns x's Class if it is of the form "class C implements
      * Comparable<C>", else null.
+     * 如果x的类是实现了Comparable这个接口的，那么返回x的类型，否则返回null
      */
     static Class<?> comparableClassFor(Object x) {
         if (x instanceof Comparable) {
@@ -725,6 +737,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     /**
      * Returns k.compareTo(x) if x matches kc (k's screened comparable
      * class), else 0.
+     * k和x进行比较，利用Comparable接口的compareTo方法进行比较
      */
     @SuppressWarnings({"rawtypes","unchecked"}) // for cast to Comparable
     static int compareComparables(Class<?> kc, Object k, Object x) {
@@ -750,16 +763,19 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * writes to be conservative.
      */
 
+    //利用Unsafe类的getObjectVolatile方法，可以线程安全的获取目标对象
     @SuppressWarnings("unchecked")
     static final <K,V> Node<K,V> tabAt(Node<K,V>[] tab, int i) {
         return (Node<K,V>)U.getObjectVolatile(tab, ((long)i << ASHIFT) + ABASE);
     }
 
+    //利用cas原理进行设值
     static final <K,V> boolean casTabAt(Node<K,V>[] tab, int i,
                                         Node<K,V> c, Node<K,V> v) {
         return U.compareAndSwapObject(tab, ((long)i << ASHIFT) + ABASE, c, v);
     }
 
+    //普通的设值方法
     static final <K,V> void setTabAt(Node<K,V>[] tab, int i, Node<K,V> v) {
         U.putObjectVolatile(tab, ((long)i << ASHIFT) + ABASE, v);
     }
@@ -769,6 +785,8 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     /**
      * The array of bins. Lazily initialized upon first insertion.
      * Size is always a power of two. Accessed directly by iterators.
+     * volatile修饰的table变量，该变量代表着由segment的头组成的数组，
+     * 并且，该数组的长度为2的幂
      */
     transient volatile Node<K,V>[] table;
 
@@ -906,6 +924,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
 
     /**
      * {@inheritDoc}
+     * 线程安全
      */
     public int size() {
         long n = sumCount();
@@ -916,6 +935,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
 
     /**
      * {@inheritDoc}
+     * 线程安全
      */
     public boolean isEmpty() {
         return sumCount() <= 0L; // ignore transient negative values
@@ -2511,6 +2531,10 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         CounterCell(long x) { value = x; }
     }
 
+    /*
+    * counterCells该变量使用了volatile修饰符修饰，即获取到counterCells的值的时候是最新的；
+    * 且CounterCell中的value使用了volatile修饰，保证了安全性，这两个volatile缺一不可
+    * */
     final long sumCount() {
         CounterCell[] as = counterCells; CounterCell a;
         long sum = baseCount;
