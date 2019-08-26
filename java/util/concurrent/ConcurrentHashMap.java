@@ -985,6 +985,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      *         is a key in this table, as determined by the
      *         {@code equals} method; {@code false} otherwise
      * @throws NullPointerException if the specified key is null
+     * 调用get方法
      */
     public boolean containsKey(Object key) {
         return get(key) != null;
