@@ -1000,6 +1000,8 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @return {@code true} if this map maps one or more keys to the
      *         specified value
      * @throws NullPointerException if the specified value is null
+     * 利用Traverser这个遍历工具类，对ConcurrentHashMap进行遍历，
+     * 因此该方法的效率低下，O(n)级别的时间效率，不推荐使用
      */
     public boolean containsValue(Object value) {
         if (value == null)
@@ -1007,7 +1009,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         Node<K,V>[] t;
         if ((t = table) != null) {
             Traverser<K,V> it = new Traverser<K,V>(t, t.length, 0, t.length);
-            for (Node<K,V> p; (p = it.advance()) != null; ) {
+            for (Node<K,V> p; (p = it.advance()) != null; ) {//advance方法返回Node的下一个Node
                 V v;
                 if ((v = p.val) == value || (v != null && value.equals(v)))
                     return true;
