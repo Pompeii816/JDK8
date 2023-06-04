@@ -628,7 +628,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         //如果table为空，则直接调用resize()函数，初始化存储空间
         if ((tab = table) == null || (n = tab.length) == 0)
             n = (tab = resize()).length;
-        //计算插入位置，计算方式为下标为(n - 1) & hash
+        //计算插入位置，计算方式为下标为(n - 1) & hash，关键在于计算的方式，当长度等于2^n的时候，刚好（len - 1） & hash等于取模操作
         if ((p = tab[i = (n - 1) & hash]) == null)//如果插入位置没有其他元素，直接插入，p为插入位置的Node
             tab[i] = newNode(hash, key, value, null);
         else {
