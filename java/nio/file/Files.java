@@ -88,6 +88,7 @@ import java.util.stream.StreamSupport;
  */
 
 public final class Files {
+    // 构造方法私有了
     private Files() { }
 
     /**

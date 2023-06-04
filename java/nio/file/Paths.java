@@ -36,6 +36,7 @@ import java.net.URI;
  */
 
 public final class Paths {
+    // 私有构造方法
     private Paths() { }
 
     /**
